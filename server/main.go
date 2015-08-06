@@ -5,8 +5,8 @@ import (
 	"log"
 	"net/http"
 
-	"github.com/marpio/ownPocket/server/contentextractor"
 	"github.com/marpio/ownPocket/server/dto"
+	"github.com/marpio/ownPocket/server/websiteextractor"
 )
 
 func handler(w http.ResponseWriter, r *http.Request) {
