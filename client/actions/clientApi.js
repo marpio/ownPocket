@@ -1,12 +1,12 @@
 import request from "superagent";
+import sp from "superagent-promise";
 
+let agent = sp(request, Promise);
 export function searchBookmarks(searchPhrase) {
-  console.log(request);
-  request.get('http://localhost:8089/api/bookmarks/search?q=tutorial', function(err, res){
-  if (err) throw err;
-  console.log(res.text);
-});
 
+  let t = agent.get("http://localhost:8089/api/bookmarks/search?q=tutorial").end();
+
+  t.then(r => console.log(r));
 
   return new Promise(function(resolve, reject) {
     resolve([{
