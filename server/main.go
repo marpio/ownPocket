@@ -8,11 +8,21 @@ import (
 	"github.com/marpio/ownPocket/server/dto"
 	"github.com/marpio/ownPocket/server/models"
 	"github.com/marpio/ownPocket/server/websiteextractor"
+	"github.com/rs/cors"
 )
 
 // Env struct
 type Env struct {
 	db models.Datastore
+}
+
+func checkErrorAndWriteToRes(err error, w http.ResponseWriter) (shouldReturn bool) {
+	if err != nil {
+		log.Println(err)
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return true
+	}
+	return false
 }
 
 // AddBookmarkHandler request handler
@@ -21,21 +31,18 @@ func (env *Env) AddBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 
 	var url dto.URL
 	err := decoder.Decode(&url)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, `Could not parse json!`, http.StatusBadRequest)
+	if checkErrorAndWriteToRes(err, w) {
 		return
 	}
 	c, err := websiteextractor.Extract(url.URL)
 
 	bookmark, err := env.db.AddBookmark(c)
-	if err != nil {
-		log.Println(err)
-		http.Error(w, `Could not save website content!`, http.StatusInternalServerError)
+	log.Println(bookmark.Docid)
+	if checkErrorAndWriteToRes(err, w) {
+		return
 	}
 	b, err := json.Marshal(bookmark)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if checkErrorAndWriteToRes(err, w) {
 		return
 	}
 	w.Header().Set("Content-Type", "application/json")
@@ -47,12 +54,11 @@ func (env *Env) SearchBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query().Get("q")
 
 	bookmarks, err := env.db.SearchBookmarks(q)
-	if err != nil {
-		log.Println(err)
+	if checkErrorAndWriteToRes(err, w) {
+		return
 	}
 	bs, err := json.Marshal(bookmarks)
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
+	if checkErrorAndWriteToRes(err, w) {
 		return
 	}
 
@@ -62,14 +68,25 @@ func (env *Env) SearchBookmarkHandler(w http.ResponseWriter, r *http.Request) {
 
 func main() {
 	log.SetFlags(log.LstdFlags | log.Lshortfile)
+	port := ":8089"
 	db, err := models.NewDB("./ownPocket.db")
 	if err != nil {
 		log.Panic(err)
 	}
 
 	env := &Env{db}
-	log.Println("serving")
-	http.HandleFunc("/api/create", env.AddBookmarkHandler)
-	http.HandleFunc("/api/search", env.SearchBookmarkHandler)
-	http.ListenAndServe(":8089", nil)
+	log.Printf("serving on port %s\n", port)
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/api/bookmarks/create", env.AddBookmarkHandler)
+	mux.HandleFunc("/api/bookmarks/search", env.SearchBookmarkHandler)
+	// cors.Default() setup the middleware with default options being
+	// all origins accepted with simple methods (GET, POST). See
+	// documentation below for more options.
+	handler := cors.Default().Handler(mux)
+	http.ListenAndServe(port, handler)
+
+	// http.HandleFunc("/api/bookmarks/create", env.AddBookmarkHandler)
+	// http.HandleFunc("/api/bookmarks/search", env.SearchBookmarkHandler)
+	// http.ListenAndServe(port, nil)
 }

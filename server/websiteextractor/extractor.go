@@ -16,6 +16,7 @@ func extractTitle(url string, c chan string) {
 		log.Println(err)
 	}
 	c <- doc.Find("title").First().Text()
+	c <- doc.Find("p").First().Text()
 }
 
 func extractReadableContent(url string, c chan string) {
@@ -41,13 +42,13 @@ func Extract(url string) (bookmark *models.Bookmark, err error) {
 	c := make(chan string)
 	go extractTitle(url, c)
 	go extractReadableContent(url, c)
-	title, readableContent := <-c, <-c
 
-	log.Println(title)
+	title, firstParagraph, readableContent := <-c, <-c, <-c
 
 	return &models.Bookmark{
 		URL:               url,
 		Title:             title,
+		FirstParagraph:    firstParagraph,
 		ReadableContent:   readableContent,
 		SearchableContent: sanitize.HTML(readableContent),
 	}, nil

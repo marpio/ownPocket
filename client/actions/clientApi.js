@@ -1,4 +1,13 @@
+import request from "superagent";
+
 export function searchBookmarks(searchPhrase) {
+  console.log(request);
+  request.get('http://localhost:8089/api/bookmarks/search?q=tutorial', function(err, res){
+  if (err) throw err;
+  console.log(res.text);
+});
+
+
   return new Promise(function(resolve, reject) {
     resolve([{
       id: 0,
