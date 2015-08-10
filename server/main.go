@@ -11,9 +11,7 @@ import (
 	"github.com/rs/cors"
 )
 
-type handler func(w http.ResponseWriter, r *http.Request)
-
-func basicAuth(pass handler) handler {
+func basicAuth(pass http.HandlerFunc) http.HandlerFunc {
 
 	return func(w http.ResponseWriter, r *http.Request) {
 
