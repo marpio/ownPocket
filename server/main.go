@@ -11,35 +11,35 @@ import (
 	"github.com/rs/cors"
 )
 
-func basicAuth(pass http.HandlerFunc) http.HandlerFunc {
-
-	return func(w http.ResponseWriter, r *http.Request) {
-
-		auth := strings.SplitN(r.Header["Authorization"][0], " ", 2)
-
-		if len(auth) != 2 || auth[0] != "Basic" {
-			http.Error(w, "bad syntax", http.StatusBadRequest)
-			return
-		}
-
-		payload, _ := base64.StdEncoding.DecodeString(auth[1])
-		pair := strings.SplitN(string(payload), ":", 2)
-
-		if len(pair) != 2 || !Validate(pair[0], pair[1]) {
-			http.Error(w, "authorization failed", http.StatusUnauthorized)
-			return
-		}
-
-		pass(w, r)
-	}
-}
-
-func validate(username, password string) bool {
-	if username == "username" && password == "password" {
-		return true
-	}
-	return false
-}
+// func basicAuth(pass http.HandlerFunc) http.HandlerFunc {
+//
+// 	return func(w http.ResponseWriter, r *http.Request) {
+//
+// 		auth := strings.SplitN(r.Header["Authorization"][0], " ", 2)
+//
+// 		if len(auth) != 2 || auth[0] != "Basic" {
+// 			http.Error(w, "bad syntax", http.StatusBadRequest)
+// 			return
+// 		}
+//
+// 		payload, _ := base64.StdEncoding.DecodeString(auth[1])
+// 		pair := strings.SplitN(string(payload), ":", 2)
+//
+// 		if len(pair) != 2 || !Validate(pair[0], pair[1]) {
+// 			http.Error(w, "authorization failed", http.StatusUnauthorized)
+// 			return
+// 		}
+//
+// 		pass(w, r)
+// 	}
+// }
+//
+// func validate(username, password string) bool {
+// 	if username == "username" && password == "password" {
+// 		return true
+// 	}
+// 	return false
+// }
 
 // Env struct
 type Env struct {
@@ -108,8 +108,8 @@ func main() {
 	log.Printf("serving on port %s\n", port)
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/api/bookmarks/create", basicAuth(env.AddBookmarkHandler))
-	mux.HandleFunc("/api/bookmarks/search", basicAuth(env.SearchBookmarkHandler))
+	mux.HandleFunc("/api/bookmarks/create", env.AddBookmarkHandler)
+	mux.HandleFunc("/api/bookmarks/search", env.SearchBookmarkHandler)
 	// cors.Default() setup the middleware with default options being
 	// all origins accepted with simple methods (GET, POST). See
 	// documentation below for more options.

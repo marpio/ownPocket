@@ -23,7 +23,7 @@ export default class OwnPocketApp extends Component {
             dispatch(actions.addBookmark(url))
         }/>
         <BookmarkList bookmarks = {
-          this.props.bookmarks
+          bookmarks
         }
         onDeleteBookmarkClick = {
           id => dispatch(actions.deleteBookmark(id))
@@ -36,6 +36,7 @@ export default class OwnPocketApp extends Component {
   // Which props do we want to inject, given the global state?
   // Note: use https://github.com/faassen/reselect for better performance.
   function select(state) {
+    console.log(state);
     return {
       bookmarks: state.ownPocket
     };
