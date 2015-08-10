@@ -7,9 +7,9 @@ export default class BookmarkList extends Component {
       <ul>
         {this.props.bookmarks.map((bookmark, index) =>
           <Bookmark {...bookmark}
-                key={bookmark.id}
+                key={bookmark.docid}
                 handleDeleteClick={() => {
-                  this.props.onDeleteBookmarkClick(bookmark.id);
+                  this.props.onDeleteBookmarkClick(bookmark.docid);
                 }}/>
         )}
       </ul>
